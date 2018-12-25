@@ -203,7 +203,7 @@ A /somefile.txt
 dbf0e2a6421dfcb3d2194c5e2c3daf2132bd0c172cdaaa3ab90f27d5a0273ba8
 	</code></pre>
 	<hr/>
-	<pre><code class="bash">docker images --tree</code></pre>
+	<pre><code class="bash">dockviz images --tree</code></pre>
 	<pre><code class="bash" data-trim>
 └─511136ea3c5a Virtual Size: 0 B
   └─6170bb7b0ad1 Virtual Size: 0 B
@@ -212,30 +212,18 @@ dbf0e2a6421dfcb3d2194c5e2c3daf2132bd0c172cdaaa3ab90f27d5a0273ba8
 	</code></pre>
 </section>
 
-<section>
-	<h2>Setup for assignment</h2>
-	<ul>
-		<li>We are using Vagrant for the assignments</li>
-		<li>Really just a virtual machine in VirtualBox</li>
-		<li><code>vagrant up</code> Starts your virtual machine</li>
-		<li><code>vagrant destroy</code> Resets your virtual machine</li>
-		<li><code>vagrant ssh</code> Log in to the virtual machine</li>
-		<li><code>/vagrant</code> inside the virtual machine is a shared folder</li>
-	</ul>
-</section>
-
 <section id="ass1">
 	<h2>Assignment #1</h2>
 	<ol>
 		<li>Run <code>echo "Hello world"</code> in a container based on the Ubuntu image</li>
 		<li>Run an interactive bash in a container</li>
-		<li>Install node.js (<code>nodejs</code>) in a container (using interactive bash)</li>
+		<li>Install Ruby (<code>ruby</code>) in a container (using interactive bash)</li>
 		<ul>
 			<li><code>apt-get update</code> Updates list of available software</li>
 			<li><code>apt-get install</code> Install software</li>
 		</ul>
-		<li>Create an image called <code>assig1</code> with node.js installed</li>
-		<li>Try to run <code>nodejs --version</code> using your new image</li>
+		<li>Create an image called <code>assig1</code> with ruby installed</li>
+		<li>Try to run <code>ruby --version</code> using your new image</li>
 	</ol>
 </section>
 
@@ -258,20 +246,19 @@ dbf0e2a6421dfcb3d2194c5e2c3daf2132bd0c172cdaaa3ab90f27d5a0273ba8
 	<h2>Dockerfile</h2>
 	<pre><code class="bash" data-trim>
 FROM ubuntu
-RUN apt-get update
-RUN apt-get install -y nodejs npm
+RUN apt-get update && apt-get install -y ruby
 	</code></pre>
 	<p>Each RUN-command creates a new layer. Layers are re-used</p>
 </section>
 
 <section>
 	<h2>Build image</h2>
-	<pre><code class="bash">docker build --tag="ubuntu-nodejs" .</code></pre>
+	<pre><code class="bash">docker build --tag="ubuntu-ruby" .</code></pre>
 	<hr>
 	<pre><code class="bash">
 $> docker images
-REPOSITORY     TAG      IMAGE ID      CREATED        VIRTUAL SIZE
-ubuntu-nodejs  latest   34b580498f7b  2 minutes ago  248.2 MB
+REPOSITORY   TAG     IMAGE ID                 CREATED                     SIZE
+ubuntu-ruby    latest  27e805818873  About a minute ago   145MB
 	</code></pre>
 </section>
 
@@ -279,9 +266,9 @@ ubuntu-nodejs  latest   34b580498f7b  2 minutes ago  248.2 MB
 	<h2>Assignment #2</h2>
 	<p>Do the following using a Dockerfile ...</p>
 	<ol>
-		<li>Create an image with <code>nodejs</code> and <code>npm</code> installed</li>
-		<li>Tag your image as <code>ubuntu-nodejs</code></li>
-		<li>Create a container based on that image, and run <code>nodejs --version</code> to check that it is installed correctly</li>
+		<li>Create an image with <code>ruby</code> installed</li>
+		<li>Tag your image as <code>ubuntu-ruby</code></li>
+		<li>Create a container based on that image, and run <code>ruby --version</code> to check that it is installed correctly</li>
 	</ol>
 </section>
 
@@ -295,9 +282,9 @@ ubuntu-nodejs  latest   34b580498f7b  2 minutes ago  248.2 MB
 	<h2>ADD</h2>
 	<p>Copy a file from the host to the image</p>
 	<pre><code class="bash" data-trim>
-FROM ubuntu-nodejs
+FROM ubuntu-ruby
 
-ADD ./src /var/apps/nodejs/
+ADD ./src /var/apps/ruby/
 	</code></pre>
 	<p>Same as running <code>docker cp</code></p>
 </section>
@@ -306,8 +293,8 @@ ADD ./src /var/apps/nodejs/
 	<h2>USER</h2>
 	<p>Run command as user</p>
 	<pre><code class="bash" data-trim>
-FROM ubuntu-nodejs
-ADD ./src /var/apps/nodejs/
+FROM ubuntu-ruby
+ADD ./src /var/apps/ruby/
 
 USER daemon
 	</code></pre>
@@ -317,11 +304,11 @@ USER daemon
 	<h2>ENTRYPOINT</h2>
 	<p>Command to run when starting the container</p>
 	<pre><code class="bash" data-trim>
-FROM ubuntu-nodejs
-ADD ./src /var/apps/nodejs/
+FROM ubuntu-ruby
+ADD ./src /var/apps/ruby/
 USER daemon
 
-ENTRYPOINT ["nodejs", "/var/apps/nodejs/index.js"]
+ENTRYPOINT ["ruby", "/var/apps/ruby/app.rb", "-o", "0.0.0.0"]
 	</code></pre>
 </section>
 
@@ -330,7 +317,7 @@ ENTRYPOINT ["nodejs", "/var/apps/nodejs/index.js"]
 	<h2>WORKDIR</h2>
 	<p>Change current working directory</p>
 	<pre><code class="bash" data-trim>
-FROM ubuntu-nodejs
+FROM ubuntu-ruby
 WORKDIR /
 RUN rm -fr *
 
@@ -342,31 +329,31 @@ RUN rm -fr *
 	<p>Specify which ports the container should make available</p>
 	<pre><code class="bash" data-trim>
 FROM ubuntu-nodejs
-ADD ./src /var/apps/nodejs/
+ADD ./src /var/apps/ruby/
 USER daemon
-ENTRYPOINT ["nodejs", "/var/apps/nodejs/index.js"]
+ENTRYPOINT ["ruby", "/var/apps/ruby/app.rb", "-o", "0.0.0.0"]
 
-EXPOSE 8888
+EXPOSE 4567
 	</code></pre>
 </section>
 
 <section>
 	<h2>Publish ports</h2>
 	<p>Ports are not automatically published</p>
-	<pre><code class="bash">docker run -p 8888:8888 ubuntu-nodejs</code></pre>
-	<p>Maps ports 8888 on host machine to 8888 on container</p>
+	<pre><code class="bash">docker run -p 4567:4567 ubuntu-ruby</code></pre>
+	<p>Maps ports 4567 on host machine to 4567 on container</p>
 </section>
 
 <section id="ass3">
 	<h2>Assignment #3</h2>
-	<p>Based on the <code>ubuntu-nodejs</code> image created in <a href="#/ass2">Assignment #2</a>:
+	<p>Based on the <code>ubuntu-ruby</code> image created in <a href="#/ass2">Assignment #2</a>:
 	<ol>
-		<li>Add <code>/vagrant/app/src</code> to <code>/var/apps/nodejs</code> inside the image</li>
-		<li>Run <code>npm install</code> in <code>/var/apps/nodejs</code> directory in the container</li>
-		<li>The application is started with <code>nodejs /var/apps/nodejs/index.js</code></li>
-		<li>The application is running on port 8888</li>
-		<li>Start the container with the port mapped to port 8888 on the host machine</li>
-		<li>Check that the application is running on <a href="http://localhost:8888/">http://localhost:8888</a></li>
+		<li>Add <code>docker-workshop/app/src</code> to <code>/var/apps/ruby</code> inside the image</li>
+		<li>Run <code>bundle install</code> in <code>/var/apps/ruby</code> directory in the container</li>
+		<li>The application is started with <code>bundle exec ruby /var/apps/ruby/app.rb -o 0.0.0.0</code></li>
+		<li>The application is running on port 4567</li>
+		<li>Start the container with the port mapped to port 4567 on the host machine</li>
+		<li>Check that the application is running on <a href="http://localhost:4567/">http://localhost:4567</a></li>
 	</ol>
 </section>
 
@@ -413,8 +400,8 @@ ENTRYPOINT mongod
 </pre></code>
 
 	<pre><code class="bash">$ docker build --tag ubuntu-mongo /path/to/mongodb/Dockerfile</code></pre>
-	<pre><code class="bash">$ docker run --volume /data:/data/db 
-             --name mongodb 
+	<pre><code class="bash">$ docker run --volume /data:/data/db
+             --name mongodb
              --detach ubuntu-mongo</code></pre>
 	<p>MongoDB is running!</p>
 
@@ -469,12 +456,12 @@ CMD nodejs /var/apps/nodejs/index.js
 	</code></pre>
 
 	<pre><code class="bash">$ docker build --tag ubuntu-nodejs /path/to/nodejs/Dockerfile</code></pre>
-	<pre><code class="bash">$ docker run --publish 8888:8888 
-             --link="mongodb:mongodb" 
+	<pre><code class="bash">$ docker run --publish 8888:8888
+             --link="mongodb:mongodb"
              --detach ubuntu-nodejs</code></pre>
 
 </section>
-	
+
 <section>
     <h2>Our Nodejs app is now connected to MongoDB</h2>
 	<pre><code class="bash" style="font-size: 11pt">
@@ -494,14 +481,14 @@ mongo:latest          /bin/sh -c mongod /b  27017/tcp                drunk_ptole
 			<p style="font-size: 16pt">(Create the new Dockerfile in a seperate directory. Remember to <code>EXPOSE</code> the port)</p>
 		</li>
 		<li>
-			Run a container based on the newly created Mongod-image 
+			Run a container based on the newly created Mongod-image
 			<p style="font-size: 16pt">(remember to give it a <code>--name</code>)</p>
 		</li>
 		<li>
 			Start the Nodejs application with the <code>--link</code> option
 		</li>
 		<li>
-			Verify that the application is connected to MongoDB by visiting <a href="http://localhost:8888/">http://localhost:8888</a>		
+			Verify that the application is connected to MongoDB by visiting <a href="http://localhost:8888/">http://localhost:8888</a>
 	    </li>
 	</ol>
 </section>
