@@ -22,7 +22,6 @@
 		<!-- For syntax highlighting -->
 		<link rel="stylesheet" href="lib/css/solarized_light.css">
 
-
 		<!-- If the query includes 'print-pdf', use the PDF print sheet -->
 		<script>
 			document.write( '<link rel="stylesheet" href="css/print/' + ( window.location.search.match( /print-pdf/gi ) ? 'pdf' : 'paper' ) + '.css" type="text/css" media="print">' );
@@ -114,7 +113,7 @@
 <section>
 	<h2>Get a base image</h2>
 	<p><code class="bash">docker pull ubuntu:latest</code></p>
-	<p>Pulls an image from <a href="http://index.docker.io">index.docker.io</a></p>
+	<p>Pulls an image from <a href="http://hub.docker.com">hub.docker.com</a></p>
 </section>
 
 <section>
@@ -366,17 +365,17 @@ EXPOSE 4567
 	<h2>VOLUME</h2>
 	<p>Add a data volume</p>
 	<pre><code class="bash" data-trim>
-FROM ubuntu:14.04
+FROM redis:5
 ...
-ENTRYPOINT mongod
+ENTRYPOINT redis-server
 
-VOLUME /data/db
+VOLUME /data
 </code></pre>
 </section>
 
 <section>
 	<h2>Mounting volumes</h2>
-	<pre><code class="bash">docker run --volume /data:/data/db ubuntu-mongo</code></pre>
+	<pre><code class="bash">docker run --volume data:/data redis:5</code></pre>
 </section>
 
 <section>
@@ -385,29 +384,16 @@ VOLUME /data/db
 </section>
 
 <section>
-<h2>Container #1: MongoDB</h2>
-	<pre><code class="bash">FROM ubuntu:14.04
+<h2>Container #1: Redis</h2>
 
-RUN apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 7F0CEB10
-RUN echo 'deb http://downloads-distro.mongodb.org/repo/ubuntu-upstart dist 10gen' | sudo tee /etc/apt/sources.list.d/mongodb.list
-RUN apt-get update
-RUN apt-get --yes install mongodb-org
-
-VOLUME /data/db
-EXPOSE 27017
-
-ENTRYPOINT mongod
-</pre></code>
-
-	<pre><code class="bash">$ docker build --tag ubuntu-mongo /path/to/mongodb/Dockerfile</code></pre>
-	<pre><code class="bash">$ docker run --volume /data:/data/db
-             --name mongodb
-             --detach ubuntu-mongo</code></pre>
-	<p>MongoDB is running!</p>
+	<pre><code class="bash">$ docker run --volume data:/data
+             --name redis
+             --detach redis:5</code></pre>
+	<p>Redis is running!</p>
 
 	<pre><code style="font-size: 13pt">$ docker ps
-CONTAINER ID  IMAGE         COMMAND               PORTS      NAMES
-43a1d9173209  mongo:latest  /bin/sh -c mongod /b  27017/tcp  mongodb
+		CONTAINER ID   IMAGE      COMMAND                  CREATED        STATUS        PORTS      NAMES
+		e812df1c527b   redis:5    "docker-entrypoint.s…"   6 seconds ago  Up 6 seconds  6379/tcp   redis
 	</code></pre>
 
 </section>
@@ -415,80 +401,76 @@ CONTAINER ID  IMAGE         COMMAND               PORTS      NAMES
 <section>
 	<h4>Using --link to get environment properties</h4>
 	<pre><code class="bash" data-trim>
-$ docker run -t -i --link="mongodb:mongodb" ubuntu bash
+$ docker run -t -i --link="redis:redis" ubuntu bash
 
-root@541474c8ccd4:/# env
+root@07601c228abe:/# env
 ...
-MONGODB_PORT_27017_TCP=tcp://172.17.0.30:27017
-MONGODB_PORT=tcp://172.17.0.30:27017
-MONGODB_PORT_27017_TCP_PORT=27017
-MONGODB_PORT_27017_TCP_PROTO=tcp
-MONGODB_PORT_27017_TCP_ADDR=172.17.0.30
+REDIS_PORT=tcp://172.17.0.2:6379
+REDIS_PORT_6379_TCP_ADDR=172.17.0.2
+REDIS_PORT_6379_TCP=tcp://172.17.0.2:6379
 ...
 	</code></pre>
 </section>
 
 <section>
 	<h4>Using the environment variables</h4>
-	<p>In our node app:</p>
-	<pre><code class="javascript" data-trim>
-var mongoPort = process.env.MONGODB_PORT_27017_TCP_PORT;
-var ip = process.env.MONGODB_PORT_27017_TCP_ADDR;
+	<p>In our ruby app:</p>
+	<pre><code class="ruby" data-trim>
+def resolv_redis?
+    ENV['REDIS_PORT_6379_TCP_ADDR'] || system('ping redis -c 5')
+end
 
-var connectionString = 'mongodb://' + ip + ':' + mongoPort + '/local';
-mongoose.connect(connectionString);
+def redis_host
+    ENV['REDIS_PORT_6379_TCP_ADDR'] || 'redis'
+end
     </code></pre>
 </section>
 
 <section>
-	<h2>Container #2: our NodeJS app</h2>
-	<pre><code class="bash">FROM ubuntu:14.04
+	<h2>Container #2: our Ruby app</h2>
+	<pre><code class="bash">FROM ubuntu:18.04
 
-RUN apt-get update
-RUN apt-get --yes install nodejs npm
+RUN apt-get update && apt-get -y install ruby
+RUN gem install bundler
 
-ADD ./src /var/apps/nodejs/
-RUN cd /var/apps/nodejs/; npm install
+ADD ./app/src /var/apps/ruby/
+WORKDIR /var/apps/ruby/
+RUN bundle install
 
-EXPOSE 8888
+EXPOSE 4567
 
-CMD nodejs /var/apps/nodejs/index.js
+CMD bundle exec ruby app.rb -o 0.0.0.0
 	</code></pre>
 
-	<pre><code class="bash">$ docker build --tag ubuntu-nodejs /path/to/nodejs/Dockerfile</code></pre>
-	<pre><code class="bash">$ docker run --publish 8888:8888
-             --link="mongodb:mongodb"
-             --detach ubuntu-nodejs</code></pre>
+	<pre><code class="bash">$ docker build --tag ubuntu-ruby:assig4 /path/to/ruby/Dockerfile</code></pre>
+	<pre><code class="bash">$ docker run --publish 4567:4567
+             --link="redis:redis"
+             --detach ubuntu-ruby:assig4</code></pre>
 
 </section>
 
 <section>
-    <h2>Our Nodejs app is now connected to MongoDB</h2>
+    <h2>Our Ruby app is now connected to Redis</h2>
 	<pre><code class="bash" style="font-size: 11pt">
 $ docker ps
-IMAGE                 COMMAND               PORTS                    NAMES
-ubuntu-nodejs:latest  /bin/sh -c 'nodejs /  0.0.0.0:8888->8888/tcp   lonely_goldstine
-mongo:latest          /bin/sh -c mongod /b  27017/tcp                drunk_ptolemy/mongodb,lonely_goldstine/mongodb,mongodb
+CONTAINER ID  IMAGE              COMMAND                CREATED        STATUS        PORTS                    NAMES
+471e58bb96b9  ubuntu-ruby:assig4 "/bin/sh -c 'bundle …" 35 seconds ago Up 34 seconds 0.0.0.0:4567->4567/tcp   practical_thompson
+e812df1c527b  redis:5            "docker-entrypoint.s…" 13 minutes ago Up 13 minutes 6379/tcp                 redis
 	</code></pre>
 </section>
-
 
 <section id="ass4">
 	<h2>Assignment #4</h2>
 	<ol>
 		<li>
-			Build an image with MongoDB running
-			<p style="font-size: 16pt">(Create the new Dockerfile in a seperate directory. Remember to <code>EXPOSE</code> the port)</p>
-		</li>
-		<li>
-			Run a container based on the newly created Mongod-image
+			Run a container based on Redis image
 			<p style="font-size: 16pt">(remember to give it a <code>--name</code>)</p>
 		</li>
 		<li>
-			Start the Nodejs application with the <code>--link</code> option
+			Start the Ruby application with the <code>--link</code> option
 		</li>
 		<li>
-			Verify that the application is connected to MongoDB by visiting <a href="http://localhost:8888/">http://localhost:8888</a>
+			Verify that the application is connected to Redis by visiting <a href="http://localhost:4567/">http://localhost:4567</a>
 	    </li>
 	</ol>
 </section>

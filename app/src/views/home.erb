@@ -1,0 +1,17 @@
+<form action="/messages" method="post">
+  <input type="text" name="message" value="" size="80">
+  <input type="submit" value="送信"/>
+</form>
+<hr/>
+<form action="/messages" method="post">
+  <input type="hidden" name="_method" value="DELETE">
+  <input type="submit" value="削除!!!">
+</form>
+<hr/>
+<% if @messages %>
+  <ul>
+  <% @messages.each do |message| %>
+    <li><%= message %></li>
+  <% end %>
+  </ul>
+<% end %>
