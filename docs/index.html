@@ -157,7 +157,12 @@ CONTAINER ID IMAGE         COMMAND          CREATED       STATUS ...
 	<h2>A useful container</h2>
 	<pre><code class="bash">docker run --interactive --tty ubuntu /bin/bash</code></pre>
 	<pre><code class="bash" data-trim>
+root@a9f2bd405f9e:/# ls
+	</code></pre>
+	<hr/>
+	<pre><code class="bash" data-trim>
 root@a9f2bd405f9e:/# echo "Hello World" &gt; /somefile.txt
+root@a9f2bd405f9e:/# ls
 root@a9f2bd405f9e:/# exit
 	</code></pre>
 </section>
@@ -177,7 +182,12 @@ a9f2bd405f9e ubuntu:latest /bin/bash        3 minutes ago  Exit 0 ...
 	<p>Will re-run the same command. Will re-use same disk.</p>
 	<pre><code class="bash">docker start --attach --interactive a9f2bd405f9e</code></pre>
 	<pre><code class="bash" data-trim>
+root@a9f2bd405f9e:/# ls
+	</code></pre>
+	<hr/>
+	<pre><code class="bash" data-trim>
 root@a9f2bd405f9e:/# echo "Hello World" &gt; /anotherfile.txt
+root@a9f2bd405f9e:/# ls
 root@a9f2bd405f9e:/# exit
 	</code></pre>
 </section>
