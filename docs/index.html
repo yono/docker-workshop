@@ -107,6 +107,13 @@
 </section>
 
 <section>
+	<h2>Preparation</h2>
+	<pre><code class="bash">git clone https://github.com/yono/docker-workshop</code></pre>
+	<hr/>
+	<pre><code class="bash">brew install dockviz</code></pre>
+</section>
+
+<section>
 	<h1>Lifecycle in Docker</h1>
 </section>
 
@@ -150,7 +157,12 @@ CONTAINER ID IMAGE         COMMAND          CREATED       STATUS ...
 	<h2>A useful container</h2>
 	<pre><code class="bash">docker run --interactive --tty ubuntu /bin/bash</code></pre>
 	<pre><code class="bash" data-trim>
+root@a9f2bd405f9e:/# ls
+	</code></pre>
+	<hr/>
+	<pre><code class="bash" data-trim>
 root@a9f2bd405f9e:/# echo "Hello World" &gt; /somefile.txt
+root@a9f2bd405f9e:/# ls
 root@a9f2bd405f9e:/# exit
 	</code></pre>
 </section>
@@ -170,7 +182,12 @@ a9f2bd405f9e ubuntu:latest /bin/bash        3 minutes ago  Exit 0 ...
 	<p>Will re-run the same command. Will re-use same disk.</p>
 	<pre><code class="bash">docker start --attach --interactive a9f2bd405f9e</code></pre>
 	<pre><code class="bash" data-trim>
+root@a9f2bd405f9e:/# ls
+	</code></pre>
+	<hr/>
+	<pre><code class="bash" data-trim>
 root@a9f2bd405f9e:/# echo "Hello World" &gt; /anotherfile.txt
+root@a9f2bd405f9e:/# ls
 root@a9f2bd405f9e:/# exit
 	</code></pre>
 </section>
@@ -180,16 +197,9 @@ root@a9f2bd405f9e:/# exit
 	<p>Will show changes from base image and the container</p>
 	<pre><code class="bash">docker diff a9f2bd405f9e</code></pre>
 	<pre><code class="bash" data-trim>
-A /.bash_history
+C /root
+A /root/.bash_history
 A /anotherfile.txt
-C /dev
-C /dev/console
-C /dev/core
-C /dev/fd
-C /dev/ptmx
-C /dev/stderr
-C /dev/stdin
-C /dev/stdout
 A /somefile.txt
 	</code></pre>
 </section>
@@ -345,9 +355,10 @@ EXPOSE 4567
 
 <section id="ass3">
 	<h2>Assignment #3</h2>
-	<p>Based on the <code>ubuntu-ruby</code> image created in <a href="#/ass2">Assignment #2</a>:
+	<p>Let's create Dockerfile based on the <code>ubuntu-ruby</code> image created in <a href="#/ass2">Assignment #2</a>:
 	<ol>
 		<li>Add <code>docker-workshop/app/src</code> to <code>/var/apps/ruby</code> inside the image</li>
+		<li>Install bundler gem with <code>gem install bundler -v 1.17.1</code></li>
 		<li>Run <code>bundle install</code> in <code>/var/apps/ruby</code> directory in the container</li>
 		<li>The application is started with <code>bundle exec ruby /var/apps/ruby/app.rb -o 0.0.0.0</code></li>
 		<li>The application is running on port 4567</li>
