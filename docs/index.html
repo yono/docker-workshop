@@ -355,9 +355,10 @@ EXPOSE 4567
 
 <section id="ass3">
 	<h2>Assignment #3</h2>
-	<p>Based on the <code>ubuntu-ruby</code> image created in <a href="#/ass2">Assignment #2</a>:
+	<p>Let's create Dockerfile based on the <code>ubuntu-ruby</code> image created in <a href="#/ass2">Assignment #2</a>:
 	<ol>
 		<li>Add <code>docker-workshop/app/src</code> to <code>/var/apps/ruby</code> inside the image</li>
+		<li>Install bundler gem with <code>gem install bundler -v 1.17.1</code></li>
 		<li>Run <code>bundle install</code> in <code>/var/apps/ruby</code> directory in the container</li>
 		<li>The application is started with <code>bundle exec ruby /var/apps/ruby/app.rb -o 0.0.0.0</code></li>
 		<li>The application is running on port 4567</li>
