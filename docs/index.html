@@ -442,7 +442,7 @@ end
 	<pre><code class="bash">FROM ubuntu:18.04
 
 RUN apt-get update && apt-get -y install ruby
-RUN gem install bundler
+RUN gem install bundler -v 1.17.1
 
 ADD ./app/src /var/apps/ruby/
 WORKDIR /var/apps/ruby/
