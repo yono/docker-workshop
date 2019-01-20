@@ -454,8 +454,8 @@ CMD bundle exec ruby app.rb -o 0.0.0.0
 	</code></pre>
 
 	<pre><code class="bash">$ docker build --tag ubuntu-ruby:assig4 /path/to/ruby/Dockerfile</code></pre>
-	<pre><code class="bash">$ docker run --publish 4567:4567
-             --link="redis:redis"
+	<pre><code class="bash">$ docker run --publish 4567:4567 \
+             --link="redis:redis" \
              --detach ubuntu-ruby:assig4</code></pre>
 
 </section>
