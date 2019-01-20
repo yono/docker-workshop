@@ -337,7 +337,7 @@ RUN rm -fr *
 	<h2>EXPOSE</h2>
 	<p>Specify which ports the container should make available</p>
 	<pre><code class="bash" data-trim>
-FROM ubuntu-nodejs
+FROM ubuntu-ruby
 ADD ./src /var/apps/ruby/
 USER daemon
 ENTRYPOINT ["ruby", "/var/apps/ruby/app.rb", "-o", "0.0.0.0"]
